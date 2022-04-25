@@ -5,6 +5,7 @@ import fetchPlanets from '../api/planetsAPI';
 
 function PlanetsProvider({ children }) {
   const [planets, setPlanets] = useState([]);
+  const [searchInput, setSearchInput] = useState('');
 
   async function getPlanets() {
     const planetsResponse = await fetchPlanets();
@@ -12,9 +13,15 @@ function PlanetsProvider({ children }) {
     // console.log(planetsResponse);
   }
 
+  const onChange = ({ target }) => {
+    setSearchInput(target.value);
+  };
+
   const contextValue = {
     getPlanets,
+    onChange,
     planets,
+    searchInput,
   };
 
   return (
