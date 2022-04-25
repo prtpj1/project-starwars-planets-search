@@ -12,9 +12,8 @@ function Table() {
     () => {
       getPlanets();
     },
-    // // eslint-disable-next-line react-hooks/exhaustive-deps
-    // [],
-    [getPlanets],
+    [],
+    // [getPlanets],
   );
 
   useEffect(
