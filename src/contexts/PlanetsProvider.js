@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import propTypes from 'prop-types';
 import PlanetsContext from './PlanetsContext';
 import fetchPlanets from '../api/planetsAPI';
@@ -6,10 +6,12 @@ import fetchPlanets from '../api/planetsAPI';
 function PlanetsProvider({ children }) {
   const [planets, setPlanets] = useState([]);
   const [searchInput, setSearchInput] = useState('');
-  const [column, setColumn] = useState('population');
-  const [comparison, setComparison] = useState('maior que');
-  const [numericValue, setNumericValue] = useState('0');
   const [filterByNumericValues, setFilterByNumericValues] = useState([]);
+  const [selected, setSelected] = useState({
+    column: 'population',
+    comparison: 'maior que',
+    numericValue: '0',
+  });
 
   async function getPlanets() {
     const planetsResponse = await fetchPlanets();
@@ -17,50 +19,75 @@ function PlanetsProvider({ children }) {
     // console.log(planetsResponse);
   }
 
+  useEffect(() => {
+    console.log(filterByNumericValues);
+  }, [filterByNumericValues]);
+
   const onChange = ({ target: { name, value } }) => {
     if (name === 'searchInput') {
       setSearchInput(value);
     } else if (name === 'column') {
-      setColumn(value);
+      setSelected({ ...selected, column: value });
     } else if (name === 'comparison') {
-      setComparison(value);
+      setSelected({ ...selected, comparison: value });
     } else if (name === 'numericValue') {
-      setNumericValue(value);
+      setSelected({ ...selected, numericValue: value });
     }
   };
 
-  const onClick = () => {
-    // console.log('clicado');
-    setFilterByNumericValues([
-      ...filterByNumericValues,
-      { column, comparison, numericValue },
-    ]);
-    // console.log(filterByNumericValues);
+  const handleData = (rows) => {
+    const bools = [];
 
-    switch (comparison) {
-    case 'maior que':
-      return setPlanets(planets
-        .filter((planet) => +(planet[column]) > +(numericValue)));
-    case 'menor que':
-      return setPlanets(planets
-        .filter((planet) => +(planet[column]) < +(numericValue)));
-    case 'igual a':
-      return setPlanets(planets
-        .filter((planet) => +(planet[column]) === +(numericValue)));
-    default:
-    }
+    filterByNumericValues.forEach((filter) => {
+      switch (filter.comparison) {
+      case 'maior que':
+        bools.push(+(rows[filter.column]) > +(filter.numericValue));
+        break;
+      case 'menor que':
+        bools.push(+(rows[filter.column]) < +(filter.numericValue));
+        break;
+      case 'igual a':
+        bools.push(+(rows[filter.column]) === +(filter.numericValue));
+        break;
+      default:
+        return true;
+      }
+    });
+    return bools.every((validRow) => validRow);
+  };
+
+  const handleOptions = (option) => !filterByNumericValues
+    .find((filter) => filter.column === option);
+
+  const onClickAddFilter = () => {
+    setFilterByNumericValues([...filterByNumericValues, selected]);
+    setSelected({
+      column: 'population',
+      comparison: 'maior que',
+      numericValue: '0' });
+  };
+
+  const onClickResetFilter = () => {
+    setFilterByNumericValues([]);
+    setSelected({
+      column: 'population',
+      comparison: 'maior que',
+      numericValue: '0' });
   };
 
   const contextValue = {
-    column,
-    comparison,
     filterByNumericValues,
     getPlanets,
-    numericValue,
+    handleData,
+    handleOptions,
     onChange,
-    onClick,
+    onClickResetFilter,
+    onClickAddFilter,
     planets,
     searchInput,
+    selected,
+    setFilterByNumericValues,
+    setSelected,
   };
 
   return (

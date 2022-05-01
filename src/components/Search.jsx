@@ -3,14 +3,21 @@ import PlanetsContext from '../contexts/PlanetsContext';
 
 function Search() {
   const {
-    column,
-    comparison,
+    filterByNumericValues,
+    handleOptions,
     onChange,
-    onClick,
+    onClickResetFilter,
+    onClickAddFilter,
     searchInput,
-    numericValue,
+    selected,
+    setFilterByNumericValues,
   } = useContext(PlanetsContext);
   // console.log(searchInput);
+
+  const columnOptions = [
+    'population', 'orbital_period', 'diameter', 'rotation_period', 'surface_water',
+  ];
+  const comparisonOptions = ['maior que', 'menor que', 'igual a'];
   return (
     <>
       Planet Search:
@@ -18,7 +25,7 @@ function Search() {
         data-testid="name-filter"
         name="searchInput"
         onChange={ onChange }
-        placeholder="Search for a planet"
+        placeholder="Type a planet name..."
         type="text"
         value={ searchInput }
       />
@@ -27,39 +34,71 @@ function Search() {
         data-testid="column-filter"
         name="column"
         onChange={ onChange }
-        value={ column }
+        value={ selected.column }
       >
-        <option value="population">population</option>
-        <option value="orbital_period">orbital_period</option>
-        <option value="diameter">diameter</option>
-        <option value="rotation_period">rotation_period</option>
-        <option value="surface_water">surface_water</option>
+        {columnOptions.filter(handleOptions).map((optColumn) => (
+          <option key={ optColumn } value={ optColumn }>
+            { optColumn }
+          </option>
+        ))}
       </select>
 
       <select
         data-testid="comparison-filter"
         name="comparison"
         onChange={ onChange }
-        value={ comparison }
+        value={ selected.comparison }
       >
-        <option value="maior que">maior que</option>
-        <option value="menor que">menor que</option>
-        <option value="igual a">igual a</option>
+        {comparisonOptions.map((optComparison) => (
+          <option key={ optComparison } value={ optComparison }>
+            { optComparison }
+          </option>
+        ))}
       </select>
       <input
         data-testid="value-filter"
         name="numericValue"
         onChange={ onChange }
         type="number"
-        value={ numericValue }
+        value={ selected.numericValue }
       />
       <button
         data-testid="button-filter"
-        onClick={ onClick }
+        onClick={ onClickAddFilter }
         type="button"
       >
-        Search
+        Add Filter
       </button>
+      <button
+        data-testid="button-remove-filters"
+        onClick={ onClickResetFilter }
+        type="button"
+      >
+        Reset Filters
+      </button>
+      <ul>
+        {filterByNumericValues.map((filter, index) => (
+          <li
+            data-testid="filter"
+            key={ index }
+          >
+            {/* https://flaviocopes.com/how-to-uppercase-first-letter-javascript/ */}
+            {`Filter: 
+            ${(filter.column).charAt(0).toUpperCase() + (filter.column).slice(1)}
+            ${filter.comparison} ${filter.numericValue} `}
+            <button
+              onClick={ () => {
+                const cloneArray = [...filterByNumericValues];
+                cloneArray.splice(index, 1);
+                setFilterByNumericValues(cloneArray);
+              } }
+              type="button"
+            >
+              X
+            </button>
+          </li>
+        ))}
+      </ul>
     </>
   );
 }

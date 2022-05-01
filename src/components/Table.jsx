@@ -3,6 +3,7 @@ import PlanetsContext from '../contexts/PlanetsContext';
 
 function Table() {
   const {
+    handleData,
     getPlanets,
     planets,
     searchInput,
@@ -12,8 +13,7 @@ function Table() {
     () => {
       getPlanets();
     },
-    [],
-    // [getPlanets],
+    [getPlanets],
   );
 
   useEffect(
@@ -43,6 +43,7 @@ function Table() {
       </thead>
       <tbody>
         {planets
+          .filter(handleData)
           .filter((planet) => planet.name.toLowerCase()
             .includes(searchInput.toLowerCase()))
           .map((planet) => (
